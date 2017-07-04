@@ -1,7 +1,7 @@
 VLT Role for Dell EMC Networking OS
 ====================================
 
-This role facilitates the configuration of the basics of Virtual Link Trunking (VLT) to provide a loop-free topology. This role is abstracted for Dell EMC Networking OS9.
+This role facilitates the configuration of the basics of Virtual Link Trunking (VLT) to provide a loop-free topology. This role is abstracted for Dell EMC Networking dellos9 and dellos10.
 
 Installation
 ------------
@@ -15,28 +15,52 @@ Requirements
 
 This role requires an SSH connection for connectivity to your Dell EMC Networking device. You can use any of the built-in OS connection variables or the ``provider`` dictionary.
 
-``Note: Install python-netaddr library on the ansible control host to use the role variable backupdestination.``
-
 Role Variables
 --------------
 
-``dellos_vlt`` (dictionary) contains the hostname (dictionary). The hostname is the value of the ``hostname`` variable that corresponds to the name of the OS device. This role is abstracted using the ``ansible_net_os_name`` variable  that can take the following value: dellos9.
+This role is abstracted using the ``ansible_net_os_name`` variable  that can take the following values: dellos9 and dellso10.
 
 Any role variable with a corresponding state variable set to absent negates the configuration of that variable. For variables with no state variable, setting an empty value for the variable negates the corresponding configuration. The variables and its values are case-sensitive.
- 
 
-``hostname`` holds the following keys:
+``dellos_vlt`` holds the following keys:
 
 
 |        Key | Type                      | Notes                                                                                                                                                                                     |
 |-----------:|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | domain       | integer(required)        | Configures VLT domain with a number for identification. The number can be from 1-1000. |
-| backupdestination | string    | Configures IPv4 address for VLT backup link in the form A.B.C.D or an IPv6 address in the format X:X:X:X::X. |
-| vrfname      | string         | Configures Virtual routing and forwarding (VRF) instance through which the back-up destination IP is reachable. The vrfname must be already present.  |
-| channelid    | integer        | Configures peer link port channel ID (1-4096) for the VLT domain. |
-| priority     | integer        | Configures primary priority to the corresponding channel ID. |
-| unitid       | integer        | Configures system unit ID for VLT. It can be either 0 or 1. |
-| state        | string       | Removes the VLT instance when state is set to absent. |
+| backup_destination | string    | Configures IPv4 address for VLT backup link in the form A.B.C.D or an IPv6 address in the format X:X:X:X::X. This key is supported only in dellos9. |
+| destination_type  | string    | Configures backupdestination based on this destination type which can be either ipv4 or ipv6. This key is supported only in dellos9. |
+| backup_destination_vrf      | string         | Configures Virtual routing and forwarding (VRF) instance through which the back-up destination IP is reachable. The vrfname must be already present.  |
+| VLTi    | integer        | Configures peer link port channel ID (1-4096) for the VLT domain. This key is supported only in dellos9. |
+| discovery_intf    | string        | Configures discovery interface for the VLT domain. The value can be the range of interfaces. This key is supported only in dellos10. |
+| discovery_intf_state        | string, choices: absent,present       | Removes the discovery interfaces for VLT domain when set to absent. This key is supported only in dellos10. |
+| peer_routing     | boolean        | Configures VLT peer routing. |
+| peer_routing_timeout     | integer        | Configures timeout for peer routing. The value can be in range 1-65535. This key is supported only in dellos9. |
+| multicast_peer_routing_timeout     | integer        | Configures timeout for multicast peer routing. The value can be in range 1-1200. This key is supported only in dellos9. |
+| priority     | integer        | Configures primary priority to the corresponding channel ID. This key is supported only in dellos9. |
+| unit_id       | integer        | Configures system unit ID for VLT. It can be either 0 or 1. This key is supported only in dellos9. |
+| vlt_peers     | dictionary       | Contains objects to configure VLT peer port channel. See the following vlt_peers.* for each item  |
+| vlt_peers.&lt;portchannelid&gt;    | dictionary       | Configures VLT peer port channel. The value can be "Po &lt;portchannelid&gt;"|
+| vlt_peers.&lt;portchannelid&gt;.peer_lag     | integer       | Configures port channel id of the VLT peer lag.  |
+| system_mac     | string        | Configures system MAC address for VLT.  |
+| delay_restore     | integer, default=90        | Configures delay in bringing up VLT ports after reload or peer-link restoration. |
+| delay_restore_abort_threshold     | integer, default=60        | Configures wait interval for VLT delay-restore timer to abort. |
+| proxy_gateway     | dictionary       | Contains objects to configure VLT proxy gateway. See the following proxy_gateway.* for each item  |
+| proxy_gateway.static     | dictionary       | Contains objects to configure static VLT proxy gateway. See the following static.* for each item  |
+| static.remote_mac     | list      | Configures remote mac for static VLT proxy gateway. See the following remote_mac.* for each item  |
+| remote_mac.address     | string        | Configures remote MAC address for static VLT proxy gateway.  |
+| remote_mac.exclude_vlan_range     | string        | Configures exclude vlan for static VLT proxy gateway.  |
+| remote_mac.state        | string, choices: absent,present     | Removes the remote mac address or exclude vlan configured on the proxy gateway when state is set to absent. |
+| static.proxy_static_state        | string, choices: absent,present     | Removes the static VLT proxy gateway when state is set to absent. |
+| proxy_gateway.lldp     | dictionary       | Contains objects to configure lldp VLT proxy gateway. See the following lldp.* for each item. This key is mutually exclusive with proxy_gateway.static. |
+| lldp.peer_domain_link     | list      | Configures VLT proxy gateway interface. See the following peer_domain_link.* for each item  |
+| peer_domain_link.port_channel_id     | integer        | Configures port channel for VLT proxy gateway.  |
+| peer_domain_link.exclude_vlan_range     | string        | Configures exclude vlan for lldp VLT proxy gateway.  |
+| peer_domain_link.state        | string, choices: absent,present     | Removes the port channel or exclude vlan configured on the proxy gateway when state is set to absent. |
+| lldp.proxy_lldp_state        | string, choices: absent,present     | Removes the lldp VLT proxy gateway when state is set to absent. |
+| lldp.vlt_peer_mac     | boolean        | Configure proxy gateway transmit for square VLT. |
+| lldp.peer_timeout     | integer        | Configure proxy gateway restore timer. The value can be in range 1-65535. |
+| state        | string, choices: absent,present     | Removes the VLT instance when state is set to absent. |
 
 
 ```
@@ -76,7 +100,7 @@ The following example uses the dellos-vlt role to setup a vlt-domain. This examp
 
 Sample ``hosts`` file:
 
-    leaf1 ansible_host= <ip_address> ansible_net_os_name= <OS name(dellos9)>
+    leaf1 ansible_host= <ip_address> ansible_net_os_name= <OS name(dellos9,dellos10)>
 
 Sample ``host_vars/leaf1``:
 
@@ -89,16 +113,29 @@ Sample ``host_vars/leaf1``:
           auth_pass: XXXX
       transport: cli
 
-Sample ``vars/main.yaml``:
-
     dellos_vlt:
-      leaf1:
         domain: 1
-        backupdestination: 192.168.1.1
+        backup_destination: 192.168.1.1
         priority: 1
-        channelid: 101
-        vrfname: VLTi-KEEPALIVE
-        unitid: 0
+        VLTi: 101
+        backup_destination_vrf: VLTi-KEEPALIVE
+        peer_routing: true
+        peer_routing_timeout: 200
+        multicast_peer_routing_timeout: 250
+        unit_id: 0
+        system_mac: aa:aa:aa:aa:aa:aa
+        delay_restore: 100
+        delay_restore_abort_threshold: 110
+        proxy_gateway:
+          static:
+            remote_mac:
+              - address: aa:aa:aa:aa:aa:aa
+                exclude_vlan_range: 2
+                state: present
+            proxy_static_state: present
+        vlt_peers:
+          Po 12:
+            peer_lag: 13
         state: present
 
 A simple playbook to setup system, ``leaf.yaml``:
