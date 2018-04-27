@@ -41,6 +41,20 @@ dellos_vlt:
 
 ################################}
 {% if dellos_vlt is defined and dellos_vlt %}
+  {% if dellos_vlt.vlt_peers is defined and  dellos_vlt.vlt_peers %}
+    {% for key in dellos_vlt.vlt_peers.keys() %}
+      {% set channel_id = key.split(" ") %}
+      {% set peer_vars = dellos_vlt.vlt_peers[key] %}
+interface Port-channel {{ channel_id[1] }}
+      {% if peer_vars.peer_lag is defined %}
+        {% if peer_vars.peer_lag %}
+ vlt-peer-lag port-channel {{ peer_vars.peer_lag}}
+        {% else %}
+ no vlt-peer-lag
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
   {% if dellos_vlt.domain is defined and dellos_vlt.domain %}
     {% if dellos_vlt.state is defined and dellos_vlt.state == 'absent'  %}
 no vlt domain {{ dellos_vlt.domain }}
@@ -202,19 +216,5 @@ vlt domain {{ dellos_vlt.domain }}
     {% endif %}
 
     {% endif %}
-  {% endif %}
-  {% if dellos_vlt.vlt_peers is defined and  dellos_vlt.vlt_peers %}
-    {% for key in dellos_vlt.vlt_peers.keys() %}
-      {% set channel_id = key.split(" ") %}
-      {% set peer_vars = dellos_vlt.vlt_peers[key] %}
-interface Port-channel {{ channel_id[1] }}
-      {% if peer_vars.peer_lag is defined %}
-        {% if peer_vars.peer_lag %}
- vlt-peer-lag port-channel {{ peer_vars.peer_lag}}
-        {% else %}
- no vlt-peer-lag
-        {% endif %}
-      {% endif %}
-    {% endfor %}
   {% endif %}
 {% endif %}
