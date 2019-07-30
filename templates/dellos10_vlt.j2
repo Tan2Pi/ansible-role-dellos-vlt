@@ -28,12 +28,15 @@ vlt-domain {{ dellos_vlt.domain }}
       {% endif %}
     {% else %}
       {% if dellos_vlt.discovery_intf is defined and dellos_vlt.discovery_intf %}
- discovery-interface ethernet{{ dellos_vlt.discovery_intf }}
+ discovery-interface ethernet {{ dellos_vlt.discovery_intf }}
       {% endif %}
     {% endif %}
     {% if dellos_vlt.peer_routing is defined %}
       {% if dellos_vlt.peer_routing %}
  peer-routing
+      {% endif %}
+      {% if dellos_vlt.peer_routing_timeout is defined and dellos_vlt.peer_routing_timeout %}
+ peer-routing-timeout {{ dellos_vlt.peer_routing_timeout }}
       {% else %}
  no peer-routing
       {% endif %}
@@ -48,7 +51,7 @@ vlt-domain {{ dellos_vlt.domain }}
 
     {% endif %}
   {% endif %}
-  {% if dellos_vlt.vlt_peers is defined and  dellos_vlt.vlt_peers %}
+  {% if dellos_vlt.vlt_peers is defined and dellos_vlt.vlt_peers %}
     {% for key in dellos_vlt.vlt_peers.keys() %}
       {% set channel_id = key.split(" ") %}
       {% set peer_vars = dellos_vlt.vlt_peers[key] %}
