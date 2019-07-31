@@ -72,9 +72,9 @@ vlt-domain {{ dellos_vlt.domain }}
  no vlt-mac
       {% endif %}
     {% endif %}
-
-    {% endif %}
+    
   {% endif %}
+
   {% if dellos_vlt.vlt_peers is defined and dellos_vlt.vlt_peers %}
     {% for key in dellos_vlt.vlt_peers.keys() %}
       {% set channel_id = key.split(" ") %}
@@ -87,7 +87,7 @@ interface port-channel{{ channel_id[1] }}
  no vlt-port-channel
         {% endif %}
       {% endif %}
-
     {% endfor %}
   {% endif %}
+
 {% endif %}
