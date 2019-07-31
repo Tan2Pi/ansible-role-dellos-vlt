@@ -22,6 +22,7 @@ dellos_vlt:
 no vlt-domain {{ dellos_vlt.domain }}
     {% else %}
 vlt-domain {{ dellos_vlt.domain }}
+    {% endif %}
     {% if dellos_vlt.discovery_intf_state is defined and dellos_vlt.discovery_intf_state == "absent" %}
       {% if dellos_vlt.discovery_intf is defined and dellos_vlt.discovery_intf %}
  no discovery-interface ethernet{{ dellos_vlt.discovery_intf }}
@@ -31,6 +32,29 @@ vlt-domain {{ dellos_vlt.domain }}
  discovery-interface ethernet {{ dellos_vlt.discovery_intf }}
       {% endif %}
     {% endif %}
+    {% if dellos_vlt.backup_destination is defined and dellos_vlt.backup_destination %}
+      {% if dellos_vlt.destination_type is defined %}
+        {% if dellos_vlt.destination_type == 'ipv6' %}
+ backup destination {{ dellos_vlt.backup_destination }}
+        {% elif dellos_vlt.destination_type == 'ipv4' %}
+          {% if dellos_vlt.backup_destination_vrf is defined and dellos_vlt.backup_destination_vrf %}
+ backup destination {{ dellos_vlt.backup_destination }} vrf {{ dellos_vlt.backup_destination_vrf }}
+          {% else %}
+ backup destination {{ dellos_vlt.backup_destination }}
+          {% endif %}
+        {% endif %}
+      {% else %}
+ no backup destination
+      {% endif %}
+    {% endif %}
+    {% if dellos_vlt.priority is defined %}
+      {% if dellos_vlt.priority %}
+ primary-priority {{ dellos_vlt.priority }}
+      {% else %}
+ no primary-priority
+      {% endif %}
+    {% endif %}
+
     {% if dellos_vlt.peer_routing is defined %}
       {% if dellos_vlt.peer_routing %}
  peer-routing
